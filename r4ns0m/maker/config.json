@@ -1,0 +1,15 @@
+{
+  "client_id": "1546327843217350696",
+  "details": "Click below to trigger my PC!",
+  "state": "Interactive RPC",
+  "large_image": "default",
+  "large_text": "Custom Rich Presence",
+  "small_image": "",
+  "small_text": "",
+  "button_label": "Trigger Command",
+  "action_script": "./action.sh",
+  "rate_limit_seconds": 3,
+  "ably_key": "DiiOVQ.BFojtQ:R1TGzlnlj2NEZlhj-27RlzYWlZp0XQmj3R0QFxa6H58",
+  "ably_channel": "rpc-trigger",
+  "trigger_url": "https://brl26.github.io/rpc-trigger/?v=1"
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex">
+    <title>Trigger</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #eeeeee;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #1e1e1e;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h2 { color: #5865F2; margin-top: 0; }
+        p { color: #a0a0a0; margin-bottom: 0; }
+        p.ok { color: #57F287; }
+        p.err { color: #ED4245; }
+    </style>
+    <meta name="ably-key" content="DiiOVQ.BFojtQ:R1TGzlnlj2NEZlhj-27RlzYWlZp0XQmj3R0QFxa6H58">
+    <meta name="ably-channel" content="rpc-trigger">
+</head>
+<body>
+    <div class="card">
+        <h2>Triggering...</h2>
+        <p id="status">Contacting PC...</p>
+    </div>
+    <script>
+        var key = document.querySelector('meta[name="ably-key"]').content;
+        var channel = document.querySelector('meta[name="ably-channel"]').content;
+        var status = document.getElementById('status');
+
+        function publish() {
+            return fetch('https://rest.ably.io/channels/' + encodeURIComponent(channel) + '/messages', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Basic ' + btoa(key),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: 'trigger', data: { t: Date.now() } })
+            });
+        }
+
+        (async function () {
+            var attempts = 0;
+            while (true) {
+                attempts++;
+                try {
+                    var r = await publish();
+                    if (r.ok) {
+                        status.textContent = 'Command triggered!';
+                        status.className = 'ok';
+                        // Close only AFTER the publish fully completes so the
+                        // request is never aborted mid-flight.
+                        setTimeout(function () { try { window.close(); } catch (e) {} }, 600);
+                        return;
+                    }
+                    status.textContent = 'Failed: HTTP ' + r.status + ' ' + r.statusText;
+                    status.className = 'err';
+                } catch (e) {
+                    status.textContent = 'Failed: ' + e.message;
+                    status.className = 'err';
+                }
+                if (attempts >= 4) {
+                    status.textContent += ' (no retries left — take a screenshot)';
+                    return;
+                }
+                status.textContent = 'Retrying (' + (attempts) + '/3)...';
+                await new Promise(function (res) { setTimeout(res, 500); });
+            }
+        })();
+    </script>
+</body>
+</html>
